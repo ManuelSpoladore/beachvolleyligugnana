@@ -3,9 +3,7 @@ import { supabase } from "./supabaseClient";
 
 /* ============================================================
    SAN LORENZO BEACH VOLLEY — piattaforma gironi & classifiche
-   (la classifica si inserisce direttamente: partite, punti,
-   set vinti/persi, punti fatti/subiti. Quoz. set, quoz. punti
-   e posizione finale sono calcolati in automatico)
+   (classifica inserita direttamente + classifica migliori seconde)
    ============================================================ */
 
 const GIRONE_COLORS = {
@@ -90,6 +88,7 @@ const BRACKET_DEFAULT = [
 ];
 
 const EMPTY_STAT = { partite: 0, punti: 0, setVinti: 0, setPersi: 0, puntiFatti: 0, puntiSubiti: 0 };
+const EMPTY_EXCLUSION = { punti: 0, setVinti: 0, setPersi: 0, puntiFatti: 0, puntiSubiti: 0 };
 
 function teamsOfGirone(girone) {
   const set = new Set();
@@ -99,6 +98,9 @@ function teamsOfGirone(girone) {
   });
   return Array.from(set);
 }
+
+// individua automaticamente il girone da 5 squadre (qualunque esso sia)
+const FIVE_TEAM_GIRONE = Object.keys(SCHEDULE).find((g) => teamsOfGirone(g).length === 5);
 
 function emptyStandingsState() {
   const state = {};
@@ -133,16 +135,46 @@ function withRatios(team, stat) {
   };
 }
 
-/* ---------- calcolo classifica (ordina, non aggrega più partite) ---------- */
-function computeStandings(girone, standings) {
-  const teams = teamsOfGirone(girone);
-  const rows = teams.map((t) => withRatios(t, standings[t]));
-  rows.sort((x, y) => {
+function sortByQuozienti(rows) {
+  return [...rows].sort((x, y) => {
     if (y.quozSet !== x.quozSet) return y.quozSet - x.quozSet;
     if (y.quozPunti !== x.quozPunti) return y.quozPunti - x.quozPunti;
     return x.team.localeCompare(y.team);
   });
-  return rows;
+}
+
+/* ---------- calcolo classifica ufficiale di girone (completa, invariata) ---------- */
+function computeStandings(girone, standings) {
+  const teams = teamsOfGirone(girone);
+  const rows = teams.map((t) => withRatios(t, standings[t]));
+  return sortByQuozienti(rows);
+}
+
+/* ---------- classifica migliori seconde ---------- */
+function computeBestSeconds(standings, secondExclusion) {
+  const seconds = Object.keys(SCHEDULE)
+    .map((g) => {
+      const rows = computeStandings(g, standings);
+      const second = rows[1];
+      if (!second) return null;
+
+      if (g === FIVE_TEAM_GIRONE) {
+        const excl = secondExclusion[g] || EMPTY_EXCLUSION;
+        const adjusted = withRatios(second.team, {
+          partite: second.partite - 1,
+          punti: second.punti - (Number(excl.punti) || 0),
+          setVinti: second.setVinti - (Number(excl.setVinti) || 0),
+          setPersi: second.setPersi - (Number(excl.setPersi) || 0),
+          puntiFatti: second.puntiFatti - (Number(excl.puntiFatti) || 0),
+          puntiSubiti: second.puntiSubiti - (Number(excl.puntiSubiti) || 0),
+        });
+        return { ...adjusted, girone: g, adjusted: true };
+      }
+      return { ...second, girone: g, adjusted: false };
+    })
+    .filter(Boolean);
+
+  return sortByQuozienti(seconds);
 }
 
 /* ---------- elementi visivi ricorrenti ---------- */
@@ -163,7 +195,7 @@ function PositionFlag({ pos }) {
   const bg = palette[pos] || "rgba(244,236,218,0.12)";
   const dark = pos <= 3;
   return (
-    <span className="pos-flag" style={{ background: bg, color: dark ? "#0E3B43" : "#100b00" }}>
+    <span className="pos-flag" style={{ background: bg, color: dark ? "#0E3B43" : "#F4ECDA" }}>
       {pos}
     </span>
   );
@@ -205,6 +237,58 @@ function StandingsTable({ rows, color }) {
                 {r.puntiFatti}-{r.puntiSubiti}
               </td>
               <td>{fmtQ(r.quozPunti)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ---------- tabella migliori seconde ---------- */
+function BestSecondsTable({ rows }) {
+  return (
+    <div className="standings-wrap">
+      <table className="standings">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Squadra</th>
+            <th>Girone</th>
+            <th>PG</th>
+            <th>Pt</th>
+            <th>Set</th>
+            <th>Q.Set</th>
+            <th>Pti F/S</th>
+            <th>Q.Pti</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={r.team}>
+              <td>
+                <PositionFlag pos={i + 1} />
+              </td>
+              <td className="team-name" style={{ borderColor: GIRONE_COLORS[r.girone] }}>
+                {r.team}
+              </td>
+              <td>
+                <span className="girone-chip" style={{ background: GIRONE_COLORS[r.girone] }}>
+                  {r.girone}
+                </span>
+              </td>
+              <td>{r.partite}</td>
+              <td className="strong">{r.punti}</td>
+              <td>
+                {r.setVinti}-{r.setPersi}
+              </td>
+              <td>{fmtQ(r.quozSet)}</td>
+              <td>
+                {r.puntiFatti}-{r.puntiSubiti}
+              </td>
+              <td>{fmtQ(r.quozPunti)}</td>
+              <td>{i < 3 ? <span className="qualified-tag">Qualificata</span> : null}</td>
             </tr>
           ))}
         </tbody>
@@ -269,6 +353,56 @@ function StandingsEditor({ girone, standings, onCommit }) {
   );
 }
 
+/* ---------- box esclusione 2ª vs 5ª (solo girone da 5) ---------- */
+const EXCLUSION_FIELDS = [
+  { key: "punti", label: "Punti ottenuti" },
+  { key: "setVinti", label: "Set vinti" },
+  { key: "setPersi", label: "Set persi" },
+  { key: "puntiFatti", label: "Pti fatti" },
+  { key: "puntiSubiti", label: "Pti subiti" },
+];
+
+function SecondExclusionEditor({ girone, exclusion, onCommit }) {
+  const [local, setLocal] = useState(exclusion);
+
+  useEffect(() => {
+    setLocal(exclusion);
+  }, [exclusion]);
+
+  function commit(field, value) {
+    const num = value === "" ? 0 : Number(value);
+    if (Number.isNaN(num)) return;
+    if (num !== exclusion[field]) onCommit(girone, { [field]: num });
+  }
+
+  return (
+    <div className="stat-editor exclusion-box">
+      <div className="stat-editor-title">
+        Solo per la classifica "migliori seconde": dati della gara 2ª vs 5ª classificata da escludere
+      </div>
+      <p className="exclusion-hint">
+        Inserisci qui i numeri ottenuti dalla 2ª classificata di questo girone nella partita contro la 5ª
+        classificata. La classifica ufficiale del girone non cambia: questi dati servono solo per confrontare
+        correttamente le seconde tra loro.
+      </p>
+      <div className="stat-inputs">
+        {EXCLUSION_FIELDS.map((f) => (
+          <label key={f.key} className="stat-input">
+            <span>{f.label}</span>
+            <input
+              type="number"
+              min="0"
+              value={local[f.key]}
+              onChange={(e) => setLocal({ ...local, [f.key]: e.target.value })}
+              onBlur={(e) => commit(f.key, e.target.value)}
+            />
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ---------- calendario partite (solo informativo) ---------- */
 function ScheduleList({ girone }) {
   return (
@@ -288,9 +422,10 @@ function ScheduleList({ girone }) {
 }
 
 /* ---------- vista girone ---------- */
-function GironeView({ girone, standings, isAdmin, onCommit }) {
+function GironeView({ girone, standings, secondExclusion, isAdmin, onCommit, onCommitExclusion }) {
   const color = GIRONE_COLORS[girone];
   const rows = useMemo(() => computeStandings(girone, standings), [girone, standings]);
+  const isFiveTeam = girone === FIVE_TEAM_GIRONE;
   return (
     <div>
       <div className="section-head" style={{ borderColor: color }}>
@@ -303,6 +438,13 @@ function GironeView({ girone, standings, isAdmin, onCommit }) {
       {isAdmin && (
         <>
           <StandingsEditor girone={girone} standings={standings} onCommit={onCommit} />
+          {isFiveTeam && (
+            <SecondExclusionEditor
+              girone={girone}
+              exclusion={secondExclusion[girone] || EMPTY_EXCLUSION}
+              onCommit={onCommitExclusion}
+            />
+          )}
           <NetDivider color={color} />
         </>
       )}
@@ -312,15 +454,16 @@ function GironeView({ girone, standings, isAdmin, onCommit }) {
 }
 
 /* ---------- classifica generale ---------- */
-function GeneraleView({ standings }) {
+function GeneraleView({ standings, secondExclusion }) {
   const all = Object.keys(SCHEDULE).flatMap((g) =>
     computeStandings(g, standings).map((r) => ({ ...r, girone: g }))
   );
-  all.sort((x, y) => {
-    if (y.quozSet !== x.quozSet) return y.quozSet - x.quozSet;
-    if (y.quozPunti !== x.quozPunti) return y.quozPunti - x.quozPunti;
-    return x.team.localeCompare(y.team);
-  });
+  const sortedAll = sortByQuozienti(all);
+  const bestSeconds = useMemo(
+    () => computeBestSeconds(standings, secondExclusion),
+    [standings, secondExclusion]
+  );
+
   return (
     <div>
       <div className="section-head" style={{ borderColor: "#F5B942" }}>
@@ -342,7 +485,7 @@ function GeneraleView({ standings }) {
             </tr>
           </thead>
           <tbody>
-            {all.map((r, i) => (
+            {sortedAll.map((r, i) => (
               <tr key={r.team}>
                 <td>
                   <PositionFlag pos={i + 1} />
@@ -370,6 +513,18 @@ function GeneraleView({ standings }) {
           </tbody>
         </table>
       </div>
+
+      <NetDivider color="#F5B942" />
+
+      <div className="section-head" style={{ borderColor: "#F5B942" }}>
+        <h2>Migliori seconde</h2>
+      </div>
+      <p className="best-seconds-hint">
+        Passano ai quarti tutte le prime classificate più le 3 migliori seconde. Per il girone da 5 squadre
+        ({FIVE_TEAM_GIRONE}), la seconda classificata è confrontata al netto della gara contro la 5ª,
+        per pareggiare il numero di partite con le seconde degli altri gironi.
+      </p>
+      <BestSecondsTable rows={bestSeconds} />
     </div>
   );
 }
@@ -451,6 +606,7 @@ export default function App() {
   const [view, setView] = useState("girone");
   const [selectedGirone, setSelectedGirone] = useState("A");
   const [standings, setStandings] = useState(null);
+  const [secondExclusion, setSecondExclusion] = useState(null);
   const [bracket, setBracket] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -495,6 +651,25 @@ export default function App() {
       } catch (e) {
         if (!cancelled) setStandings(emptyStandingsState());
       }
+
+      try {
+        const { data, error } = await supabase.from("second_exclusion").select("*");
+        if (error) throw error;
+        const byGirone = {};
+        (data || []).forEach((row) => {
+          byGirone[row.girone] = {
+            punti: row.punti,
+            setVinti: row.set_vinti,
+            setPersi: row.set_persi,
+            puntiFatti: row.punti_fatti,
+            puntiSubiti: row.punti_subiti,
+          };
+        });
+        if (!cancelled) setSecondExclusion(byGirone);
+      } catch (e) {
+        if (!cancelled) setSecondExclusion({});
+      }
+
       try {
         const { data, error } = await supabase.from("bracket").select("*");
         if (error) throw error;
@@ -509,6 +684,7 @@ export default function App() {
       } catch (e) {
         if (!cancelled) setBracket(BRACKET_DEFAULT);
       }
+
       if (!cancelled) setLoading(false);
     }
     load();
@@ -528,6 +704,25 @@ export default function App() {
     if ("puntiSubiti" in patch) dbPatch.punti_subiti = patch.puntiSubiti;
     try {
       const { error } = await supabase.from("standings").upsert(dbPatch);
+      if (error) setSaveError(true);
+    } catch (e) {
+      setSaveError(true);
+    }
+  }, []);
+
+  const saveExclusion = useCallback(async (girone, patch) => {
+    setSecondExclusion((prev) => ({
+      ...prev,
+      [girone]: { ...(prev[girone] || EMPTY_EXCLUSION), ...patch },
+    }));
+    const dbPatch = { girone };
+    if ("punti" in patch) dbPatch.punti = patch.punti;
+    if ("setVinti" in patch) dbPatch.set_vinti = patch.setVinti;
+    if ("setPersi" in patch) dbPatch.set_persi = patch.setPersi;
+    if ("puntiFatti" in patch) dbPatch.punti_fatti = patch.puntiFatti;
+    if ("puntiSubiti" in patch) dbPatch.punti_subiti = patch.puntiSubiti;
+    try {
+      const { error } = await supabase.from("second_exclusion").upsert(dbPatch);
       if (error) setSaveError(true);
     } catch (e) {
       setSaveError(true);
@@ -688,6 +883,25 @@ export default function App() {
           font-weight: 700;
           font-size: 11px;
         }
+        .qualified-tag {
+          font-family: 'Space Mono', monospace;
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          color: #1a6b3a;
+          background: rgba(47,168,79,0.15);
+          border: 1px solid rgba(47,168,79,0.4);
+          border-radius: 999px;
+          padding: 3px 8px;
+          white-space: nowrap;
+        }
+
+        .best-seconds-hint {
+          font-size: 12px;
+          color: rgba(244,236,218,0.6);
+          margin: 0 0 12px;
+          line-height: 1.5;
+        }
 
         .matches-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
         .match-row { background: rgba(244,236,218,0.06); border: 1px solid var(--paper-line); border-radius: 10px; padding: 10px 14px; }
@@ -704,6 +918,10 @@ export default function App() {
           border-radius: 12px;
           padding: 14px;
         }
+        .stat-editor.exclusion-box {
+          border-color: rgba(255,107,74,0.4);
+          background: rgba(255,107,74,0.06);
+        }
         .stat-editor-title {
           font-family: 'Oswald', sans-serif;
           text-transform: uppercase;
@@ -711,6 +929,12 @@ export default function App() {
           letter-spacing: 0.03em;
           color: var(--sun);
           margin-bottom: 10px;
+        }
+        .exclusion-hint {
+          font-size: 12px;
+          color: rgba(244,236,218,0.65);
+          margin: 0 0 10px;
+          line-height: 1.5;
         }
         .stat-editor-row {
           display: flex;
@@ -874,7 +1098,7 @@ export default function App() {
       )}
 
       <div className="content">
-        {loading || !standings || !bracket ? (
+        {loading || !standings || !bracket || !secondExclusion ? (
           <div className="loading-state">Carico i dati del torneo…</div>
         ) : (
           <>
@@ -882,11 +1106,15 @@ export default function App() {
               <GironeView
                 girone={selectedGirone}
                 standings={standings}
+                secondExclusion={secondExclusion}
                 isAdmin={isAdmin}
                 onCommit={saveStat}
+                onCommitExclusion={saveExclusion}
               />
             )}
-            {view === "generale" && <GeneraleView standings={standings} />}
+            {view === "generale" && (
+              <GeneraleView standings={standings} secondExclusion={secondExclusion} />
+            )}
             {view === "finali" && (
               <FinaliView bracket={bracket} isAdmin={isAdmin} onUpdate={updateBracketSlot} />
             )}
