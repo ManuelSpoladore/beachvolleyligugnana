@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "./supabaseClient";
-import { Analytics } from "@vercel/analytics/next";
+import { Analytics } from "@vercel/analytics/react";
 
 /* ============================================================
    SAN LORENZO BEACH VOLLEY — piattaforma gironi & classifiche
