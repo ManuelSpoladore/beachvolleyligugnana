@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "./supabaseClient";
+import { Analytics } from "@vercel/analytics/next";
 
 /* ============================================================
    SAN LORENZO BEACH VOLLEY — piattaforma gironi & classifiche
@@ -18,11 +19,26 @@ const SCHEDULE = {
   A: {
     day: "Lunedì 27 luglio",
     matches: [
-      { id: "A1", time: "19:30", team1: "GATTINI ESPLOSIVI", team2: "CHEI DI SIL" },
+      {
+        id: "A1",
+        time: "19:30",
+        team1: "GATTINI ESPLOSIVI",
+        team2: "CHEI DI SIL",
+      },
       { id: "A2", time: "20:00", team1: "H2NO", team2: "BATTE FORTE IN RETE" },
       { id: "A3", time: "20:30", team1: "GATTINI ESPLOSIVI", team2: "H2NO" },
-      { id: "A4", time: "21:00", team1: "CHEI DI SIL", team2: "BATTE FORTE IN RETE" },
-      { id: "A5", time: "21:30", team1: "GATTINI ESPLOSIVI", team2: "BATTE FORTE IN RETE" },
+      {
+        id: "A4",
+        time: "21:00",
+        team1: "CHEI DI SIL",
+        team2: "BATTE FORTE IN RETE",
+      },
+      {
+        id: "A5",
+        time: "21:30",
+        team1: "GATTINI ESPLOSIVI",
+        team2: "BATTE FORTE IN RETE",
+      },
       { id: "A6", time: "22:00", team1: "CHEI DI SIL", team2: "H2NO" },
     ],
   },
@@ -30,11 +46,36 @@ const SCHEDULE = {
     day: "Martedì 28 luglio",
     matches: [
       { id: "B1", time: "19:30", team1: "UGABUGA", team2: "SMELINDROS" },
-      { id: "B2", time: "20:00", team1: "PAUL COUNTRYSIDE & F.", team2: "QUASI RACCOMANDATI" },
-      { id: "B3", time: "20:30", team1: "UGABUGA", team2: "PAUL COUNTRYSIDE & F." },
-      { id: "B4", time: "21:00", team1: "SMELINDROS", team2: "QUASI RACCOMANDATI" },
-      { id: "B5", time: "21:30", team1: "UGABUGA", team2: "QUASI RACCOMANDATI" },
-      { id: "B6", time: "22:00", team1: "SMELINDROS", team2: "PAUL COUNTRYSIDE & F." },
+      {
+        id: "B2",
+        time: "20:00",
+        team1: "PAUL COUNTRYSIDE & F.",
+        team2: "QUASI RACCOMANDATI",
+      },
+      {
+        id: "B3",
+        time: "20:30",
+        team1: "UGABUGA",
+        team2: "PAUL COUNTRYSIDE & F.",
+      },
+      {
+        id: "B4",
+        time: "21:00",
+        team1: "SMELINDROS",
+        team2: "QUASI RACCOMANDATI",
+      },
+      {
+        id: "B5",
+        time: "21:30",
+        team1: "UGABUGA",
+        team2: "QUASI RACCOMANDATI",
+      },
+      {
+        id: "B6",
+        time: "22:00",
+        team1: "SMELINDROS",
+        team2: "PAUL COUNTRYSIDE & F.",
+      },
     ],
   },
   C: {
@@ -45,7 +86,12 @@ const SCHEDULE = {
       { id: "C3", time: "20:00", team1: "ZIO FABBIO", team2: "BARCEMONA" },
       { id: "C4", time: "20:30", team1: "I QUAQUA", team2: "CHEI DAL VINARS" },
       { id: "C5", time: "21:00", team1: "TILACINI", team2: "BARCEMONA" },
-      { id: "C6", time: "21:30", team1: "ZIO FABBIO", team2: "CHEI DAL VINARS" },
+      {
+        id: "C6",
+        time: "21:30",
+        team1: "ZIO FABBIO",
+        team2: "CHEI DAL VINARS",
+      },
       { id: "C7", time: "22:00", team1: "I QUAQUA", team2: "TILACINI" },
       { id: "C8", time: "22:30", team1: "CHEI DAL VINARS", team2: "BARCEMONA" },
       { id: "C9", time: "23:00", team1: "ZIO FABBIO", team2: "TILACINI" },
@@ -55,40 +101,149 @@ const SCHEDULE = {
   D: {
     day: "Giovedì 30 luglio",
     matches: [
-      { id: "D1", time: "19:30", team1: "SQUIRTONIC", team2: "LA CARICA DEI 104" },
+      {
+        id: "D1",
+        time: "19:30",
+        team1: "SQUIRTONIC",
+        team2: "LA CARICA DEI 104",
+      },
       { id: "D2", time: "20:00", team1: "RICK & MORTI", team2: "CEV BOYZ" },
       { id: "D3", time: "20:30", team1: "SQUIRTONIC", team2: "RICK & MORTI" },
-      { id: "D4", time: "21:00", team1: "LA CARICA DEI 104", team2: "CEV BOYZ" },
+      {
+        id: "D4",
+        time: "21:00",
+        team1: "LA CARICA DEI 104",
+        team2: "CEV BOYZ",
+      },
       { id: "D5", time: "21:30", team1: "SQUIRTONIC", team2: "CEV BOYZ" },
-      { id: "D6", time: "22:00", team1: "LA CARICA DEI 104", team2: "RICK & MORTI" },
+      {
+        id: "D6",
+        time: "22:00",
+        team1: "LA CARICA DEI 104",
+        team2: "RICK & MORTI",
+      },
     ],
   },
   E: {
     day: "Venerdì 31 luglio",
     matches: [
-      { id: "E1", time: "19:30", team1: "ENRICO CHI?", team2: "SAE KWAN TAEKWONDO" },
-      { id: "E2", time: "20:00", team1: "SAE KWAN TAEKWONDO", team2: "SIVALETTO 2.0" },
-      { id: "E3", time: "20:30", team1: "GENITORI IN FUGA", team2: "SAE KWAN TAEKWONDO" },
+      {
+        id: "E1",
+        time: "19:30",
+        team1: "ENRICO CHI?",
+        team2: "SAE KWAN TAEKWONDO",
+      },
+      {
+        id: "E2",
+        time: "20:00",
+        team1: "SAE KWAN TAEKWONDO",
+        team2: "SIVALETTO 2.0",
+      },
+      {
+        id: "E3",
+        time: "20:30",
+        team1: "GENITORI IN FUGA",
+        team2: "SAE KWAN TAEKWONDO",
+      },
       { id: "E4", time: "21:00", team1: "ENRICO CHI?", team2: "SIVALETTO 2.0" },
-      { id: "E5", time: "21:30", team1: "GENITORI IN FUGA", team2: "SIVALETTO 2.0" },
-      { id: "E6", time: "22:00", team1: "GENITORI IN FUGA", team2: "ENRICO CHI?" },
+      {
+        id: "E5",
+        time: "21:30",
+        team1: "GENITORI IN FUGA",
+        team2: "SIVALETTO 2.0",
+      },
+      {
+        id: "E6",
+        time: "22:00",
+        team1: "GENITORI IN FUGA",
+        team2: "ENRICO CHI?",
+      },
     ],
   },
 };
 
 const BRACKET_DEFAULT = [
-  { id: "qf1", label: "Quarto 1", time: "19:00", teamA: "1°", teamB: "8°", score: "" },
-  { id: "qf2", label: "Quarto 2", time: "19:30", teamA: "4°", teamB: "5°", score: "" },
-  { id: "qf3", label: "Quarto 3", time: "20:00", teamA: "2°", teamB: "7°", score: "" },
-  { id: "qf4", label: "Quarto 4", time: "20:30", teamA: "3°", teamB: "6°", score: "" },
-  { id: "sf1", label: "Semifinale 1", time: "21:30", teamA: "Vinc. Q1", teamB: "Vinc. Q2", score: "" },
-  { id: "sf2", label: "Semifinale 2", time: "21:30", teamA: "Vinc. Q3", teamB: "Vinc. Q4", score: "" },
-  { id: "f34", label: "Finale 3°-4° posto", time: "22:00", teamA: "", teamB: "", score: "" },
-  { id: "f12", label: "Finale 1°-2° posto", time: "22:30", teamA: "", teamB: "", score: "" },
+  {
+    id: "qf1",
+    label: "Quarto 1",
+    time: "19:00",
+    teamA: "1°",
+    teamB: "8°",
+    score: "",
+  },
+  {
+    id: "qf2",
+    label: "Quarto 2",
+    time: "19:30",
+    teamA: "4°",
+    teamB: "5°",
+    score: "",
+  },
+  {
+    id: "qf3",
+    label: "Quarto 3",
+    time: "20:00",
+    teamA: "2°",
+    teamB: "7°",
+    score: "",
+  },
+  {
+    id: "qf4",
+    label: "Quarto 4",
+    time: "20:30",
+    teamA: "3°",
+    teamB: "6°",
+    score: "",
+  },
+  {
+    id: "sf1",
+    label: "Semifinale 1",
+    time: "21:30",
+    teamA: "Vinc. Q1",
+    teamB: "Vinc. Q2",
+    score: "",
+  },
+  {
+    id: "sf2",
+    label: "Semifinale 2",
+    time: "21:30",
+    teamA: "Vinc. Q3",
+    teamB: "Vinc. Q4",
+    score: "",
+  },
+  {
+    id: "f34",
+    label: "Finale 3°-4° posto",
+    time: "22:00",
+    teamA: "",
+    teamB: "",
+    score: "",
+  },
+  {
+    id: "f12",
+    label: "Finale 1°-2° posto",
+    time: "22:30",
+    teamA: "",
+    teamB: "",
+    score: "",
+  },
 ];
 
-const EMPTY_STAT = { partite: 0, punti: 0, setVinti: 0, setPersi: 0, puntiFatti: 0, puntiSubiti: 0 };
-const EMPTY_EXCLUSION = { punti: 0, setVinti: 0, setPersi: 0, puntiFatti: 0, puntiSubiti: 0 };
+const EMPTY_STAT = {
+  partite: 0,
+  punti: 0,
+  setVinti: 0,
+  setPersi: 0,
+  puntiFatti: 0,
+  puntiSubiti: 0,
+};
+const EMPTY_EXCLUSION = {
+  punti: 0,
+  setVinti: 0,
+  setPersi: 0,
+  puntiFatti: 0,
+  puntiSubiti: 0,
+};
 
 function teamsOfGirone(girone) {
   const set = new Set();
@@ -100,7 +255,9 @@ function teamsOfGirone(girone) {
 }
 
 // individua automaticamente il girone da 5 squadre (qualunque esso sia)
-const FIVE_TEAM_GIRONE = Object.keys(SCHEDULE).find((g) => teamsOfGirone(g).length === 5);
+const FIVE_TEAM_GIRONE = Object.keys(SCHEDULE).find(
+  (g) => teamsOfGirone(g).length === 5,
+);
 
 function emptyStandingsState() {
   const state = {};
@@ -130,8 +287,14 @@ function withRatios(team, stat) {
     setPersi,
     puntiFatti,
     puntiSubiti,
-    quozSet: setPersi === 0 ? (setVinti > 0 ? Infinity : 0) : setVinti / setPersi,
-    quozPunti: puntiSubiti === 0 ? (puntiFatti > 0 ? Infinity : 0) : puntiFatti / puntiSubiti,
+    quozSet:
+      setPersi === 0 ? (setVinti > 0 ? Infinity : 0) : setVinti / setPersi,
+    quozPunti:
+      puntiSubiti === 0
+        ? puntiFatti > 0
+          ? Infinity
+          : 0
+        : puntiFatti / puntiSubiti,
   };
 }
 
@@ -183,7 +346,15 @@ function NetDivider({ color = "#F5B942" }) {
     <div className="net-divider" aria-hidden="true">
       <span className="net-post" style={{ background: color }} />
       <svg viewBox="0 0 100 10" preserveAspectRatio="none" className="net-line">
-        <line x1="0" y1="5" x2="100" y2="5" stroke={color} strokeWidth="1.5" strokeDasharray="4 4" />
+        <line
+          x1="0"
+          y1="5"
+          x2="100"
+          y2="5"
+          stroke={color}
+          strokeWidth="1.5"
+          strokeDasharray="4 4"
+        />
       </svg>
       <span className="net-post" style={{ background: color }} />
     </div>
@@ -195,7 +366,10 @@ function PositionFlag({ pos }) {
   const bg = palette[pos] || "rgba(244,236,218,0.12)";
   const dark = pos <= 3;
   return (
-    <span className="pos-flag" style={{ background: bg, color: dark ? "#0E3B43" : "#070707" }}>
+    <span
+      className="pos-flag"
+      style={{ background: bg, color: dark ? "#0E3B43" : "#070707" }}
+    >
       {pos}
     </span>
   );
@@ -270,11 +444,17 @@ function BestSecondsTable({ rows }) {
               <td>
                 <PositionFlag pos={i + 1} />
               </td>
-              <td className="team-name" style={{ borderColor: GIRONE_COLORS[r.girone] }}>
+              <td
+                className="team-name"
+                style={{ borderColor: GIRONE_COLORS[r.girone] }}
+              >
                 {r.team}
               </td>
               <td>
-                <span className="girone-chip" style={{ background: GIRONE_COLORS[r.girone] }}>
+                <span
+                  className="girone-chip"
+                  style={{ background: GIRONE_COLORS[r.girone] }}
+                >
                   {r.girone}
                 </span>
               </td>
@@ -288,7 +468,11 @@ function BestSecondsTable({ rows }) {
                 {r.puntiFatti}-{r.puntiSubiti}
               </td>
               <td>{fmtQ(r.quozPunti)}</td>
-              <td>{i < 3 ? <span className="qualified-tag">Qualificata</span> : null}</td>
+              <td>
+                {i < 3 ? (
+                  <span className="qualified-tag">Qualificata</span>
+                ) : null}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -345,9 +529,16 @@ function StandingsEditor({ girone, standings, onCommit }) {
   const teams = teamsOfGirone(girone);
   return (
     <div className="stat-editor">
-      <div className="stat-editor-title">Inserisci / modifica classifica — Girone {girone}</div>
+      <div className="stat-editor-title">
+        Inserisci / modifica classifica — Girone {girone}
+      </div>
       {teams.map((t) => (
-        <StatEditorRow key={t} team={t} stat={standings[t] || EMPTY_STAT} onCommit={onCommit} />
+        <StatEditorRow
+          key={t}
+          team={t}
+          stat={standings[t] || EMPTY_STAT}
+          onCommit={onCommit}
+        />
       ))}
     </div>
   );
@@ -378,11 +569,13 @@ function SecondExclusionEditor({ girone, exclusion, onCommit }) {
   return (
     <div className="stat-editor exclusion-box">
       <div className="stat-editor-title">
-        Solo per la classifica "migliori seconde": dati della gara 2ª vs 5ª classificata da escludere
+        Solo per la classifica "migliori seconde": dati della gara 2ª vs 5ª
+        classificata da escludere
       </div>
       <p className="exclusion-hint">
-        Inserisci qui i numeri ottenuti dalla 2ª classificata di questo girone nella partita contro la 5ª
-        classificata. La classifica ufficiale del girone non cambia: questi dati servono solo per confrontare
+        Inserisci qui i numeri ottenuti dalla 2ª classificata di questo girone
+        nella partita contro la 5ª classificata. La classifica ufficiale del
+        girone non cambia: questi dati servono solo per confrontare
         correttamente le seconde tra loro.
       </p>
       <div className="stat-inputs">
@@ -422,22 +615,37 @@ function ScheduleList({ girone }) {
 }
 
 /* ---------- vista girone ---------- */
-function GironeView({ girone, standings, secondExclusion, isAdmin, onCommit, onCommitExclusion }) {
+function GironeView({
+  girone,
+  standings,
+  secondExclusion,
+  isAdmin,
+  onCommit,
+  onCommitExclusion,
+}) {
   const color = GIRONE_COLORS[girone];
-  const rows = useMemo(() => computeStandings(girone, standings), [girone, standings]);
+  const rows = useMemo(
+    () => computeStandings(girone, standings),
+    [girone, standings],
+  );
   const isFiveTeam = girone === FIVE_TEAM_GIRONE;
   return (
     <div>
       <div className="section-head" style={{ borderColor: color }}>
         <h2>
-          Girone {girone} <span className="day-label">— {SCHEDULE[girone].day}</span>
+          Girone {girone}{" "}
+          <span className="day-label">— {SCHEDULE[girone].day}</span>
         </h2>
       </div>
       <StandingsTable rows={rows} color={color} />
       <NetDivider color={color} />
       {isAdmin && (
         <>
-          <StandingsEditor girone={girone} standings={standings} onCommit={onCommit} />
+          <StandingsEditor
+            girone={girone}
+            standings={standings}
+            onCommit={onCommit}
+          />
           {isFiveTeam && (
             <SecondExclusionEditor
               girone={girone}
@@ -456,12 +664,12 @@ function GironeView({ girone, standings, secondExclusion, isAdmin, onCommit, onC
 /* ---------- classifica generale ---------- */
 function GeneraleView({ standings, secondExclusion }) {
   const all = Object.keys(SCHEDULE).flatMap((g) =>
-    computeStandings(g, standings).map((r) => ({ ...r, girone: g }))
+    computeStandings(g, standings).map((r) => ({ ...r, girone: g })),
   );
   const sortedAll = sortByQuozienti(all);
   const bestSeconds = useMemo(
     () => computeBestSeconds(standings, secondExclusion),
-    [standings, secondExclusion]
+    [standings, secondExclusion],
   );
 
   return (
@@ -490,11 +698,17 @@ function GeneraleView({ standings, secondExclusion }) {
                 <td>
                   <PositionFlag pos={i + 1} />
                 </td>
-                <td className="team-name" style={{ borderColor: GIRONE_COLORS[r.girone] }}>
+                <td
+                  className="team-name"
+                  style={{ borderColor: GIRONE_COLORS[r.girone] }}
+                >
                   {r.team}
                 </td>
                 <td>
-                  <span className="girone-chip" style={{ background: GIRONE_COLORS[r.girone] }}>
+                  <span
+                    className="girone-chip"
+                    style={{ background: GIRONE_COLORS[r.girone] }}
+                  >
                     {r.girone}
                   </span>
                 </td>
@@ -520,9 +734,10 @@ function GeneraleView({ standings, secondExclusion }) {
         <h2>Migliori seconde</h2>
       </div>
       <p className="best-seconds-hint">
-        Passano ai quarti tutte le prime classificate più le 3 migliori seconde. Per il girone da 5 squadre
-        ({FIVE_TEAM_GIRONE}), la seconda classificata è confrontata al netto della gara contro la 5ª,
-        per pareggiare il numero di partite con le seconde degli altri gironi.
+        Passano ai quarti tutte le prime classificate più le 3 migliori seconde.
+        Per il girone da 5 squadre ({FIVE_TEAM_GIRONE}), la seconda classificata
+        è confrontata al netto della gara contro la 5ª, per pareggiare il numero
+        di partite con le seconde degli altri gironi.
       </p>
       <BestSecondsTable rows={bestSeconds} />
     </div>
@@ -594,7 +809,12 @@ function FinaliView({ bracket, isAdmin, onUpdate }) {
       </div>
       <div className="bracket-list">
         {bracket.map((slot) => (
-          <BracketCard key={slot.id} slot={slot} isAdmin={isAdmin} onUpdate={onUpdate} />
+          <BracketCard
+            key={slot.id}
+            slot={slot}
+            isAdmin={isAdmin}
+            onUpdate={onUpdate}
+          />
         ))}
       </div>
     </div>
@@ -621,9 +841,11 @@ export default function App() {
     supabase.auth.getSession().then(({ data }) => {
       setIsAdmin(!!data.session);
     });
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAdmin(!!session);
-    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setIsAdmin(!!session);
+      },
+    );
     return () => listener.subscription.unsubscribe();
   }, []);
 
@@ -653,7 +875,9 @@ export default function App() {
       }
 
       try {
-        const { data, error } = await supabase.from("second_exclusion").select("*");
+        const { data, error } = await supabase
+          .from("second_exclusion")
+          .select("*");
         if (error) throw error;
         const byGirone = {};
         (data || []).forEach((row) => {
@@ -677,7 +901,12 @@ export default function App() {
         const merged = BRACKET_DEFAULT.map((slot) => {
           const row = byId[slot.id];
           return row
-            ? { ...slot, teamA: row.team_a, teamB: row.team_b, score: row.score }
+            ? {
+                ...slot,
+                teamA: row.team_a,
+                teamB: row.team_b,
+                score: row.score,
+              }
             : slot;
         });
         if (!cancelled) setBracket(merged);
@@ -730,7 +959,9 @@ export default function App() {
   }, []);
 
   const updateBracketSlot = useCallback(async (id, patch) => {
-    setBracket((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
+    setBracket((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, ...patch } : s)),
+    );
     const dbPatch = { id };
     if ("teamA" in patch) dbPatch.team_a = patch.teamA;
     if ("teamB" in patch) dbPatch.team_b = patch.teamB;
@@ -745,7 +976,10 @@ export default function App() {
 
   async function tryLogin() {
     setLoginError("");
-    const { error } = await supabase.auth.signInWithPassword({ email, password: pwInput });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password: pwInput,
+    });
     if (error) {
       setLoginError("Credenziali non valide");
     } else {
@@ -1066,18 +1300,28 @@ export default function App() {
 
       {saveError && (
         <div className="save-toast">
-          Non sono riuscito a salvare l'ultima modifica. Controlla la connessione e riprova.
+          Non sono riuscito a salvare l'ultima modifica. Controlla la
+          connessione e riprova.
         </div>
       )}
 
       <div className="nav">
-        <button className={view === "girone" ? "active" : ""} onClick={() => setView("girone")}>
+        <button
+          className={view === "girone" ? "active" : ""}
+          onClick={() => setView("girone")}
+        >
           Gironi
         </button>
-        <button className={view === "generale" ? "active" : ""} onClick={() => setView("generale")}>
+        <button
+          className={view === "generale" ? "active" : ""}
+          onClick={() => setView("generale")}
+        >
           Classifica generale
         </button>
-        <button className={view === "finali" ? "active" : ""} onClick={() => setView("finali")}>
+        <button
+          className={view === "finali" ? "active" : ""}
+          onClick={() => setView("finali")}
+        >
           Finali
         </button>
       </div>
@@ -1113,13 +1357,21 @@ export default function App() {
               />
             )}
             {view === "generale" && (
-              <GeneraleView standings={standings} secondExclusion={secondExclusion} />
+              <GeneraleView
+                standings={standings}
+                secondExclusion={secondExclusion}
+              />
             )}
             {view === "finali" && (
-              <FinaliView bracket={bracket} isAdmin={isAdmin} onUpdate={updateBracketSlot} />
+              <FinaliView
+                bracket={bracket}
+                isAdmin={isAdmin}
+                onUpdate={updateBracketSlot}
+              />
             )}
           </>
         )}
+        <Analytics />
       </div>
     </div>
   );
