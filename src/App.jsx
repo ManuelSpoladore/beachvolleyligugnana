@@ -195,7 +195,7 @@ function PositionFlag({ pos }) {
   const bg = palette[pos] || "rgba(244,236,218,0.12)";
   const dark = pos <= 3;
   return (
-    <span className="pos-flag" style={{ background: bg, color: dark ? "#0E3B43" : "#F4ECDA" }}>
+    <span className="pos-flag" style={{ background: bg, color: dark ? "#0E3B43" : "#070707" }}>
       {pos}
     </span>
   );
