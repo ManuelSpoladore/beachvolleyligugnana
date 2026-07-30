@@ -4,8 +4,9 @@ import { Analytics } from "@vercel/analytics/react";
 
 /* ============================================================
    SAN LORENZO BEACH VOLLEY — piattaforma gironi & classifiche
-   (classifica inserita direttamente + migliori seconde con
-   possibilità di modifica manuale)
+   (classifica di girone inserita direttamente; classifica
+   generale e migliori seconde partono da quei dati e sono
+   modificabili a mano dall'admin)
    ============================================================ */
 
 const GIRONE_COLORS = {
@@ -151,6 +152,20 @@ function computeStandings(girone, standings) {
   return sortByQuozienti(rows);
 }
 
+/* ---------- classifica generale (con override manuali) ---------- */
+function computeGeneralStandings(standings, generalOverrides) {
+  const all = Object.keys(SCHEDULE).flatMap((g) =>
+    teamsOfGirone(g).map((t) => {
+      const base = standings[t] || EMPTY_STAT;
+      const override = generalOverrides[t];
+      const source = override || base;
+      const withR = withRatios(t, source);
+      return { ...withR, girone: g, edited: !!override };
+    })
+  );
+  return sortByQuozienti(all);
+}
+
 /* ---------- classifica migliori seconde (con override manuali) ---------- */
 function computeBestSeconds(standings, overrides) {
   const seconds = Object.keys(SCHEDULE)
@@ -185,13 +200,13 @@ function PositionFlag({ pos }) {
   const bg = palette[pos] || "rgba(244,236,218,0.12)";
   const dark = pos <= 3;
   return (
-    <span className="pos-flag" style={{ background: bg, color: dark ? "#0E3B43" : "#121212" }}>
+    <span className="pos-flag" style={{ background: bg, color: dark ? "#0E3B43" : "#F4ECDA" }}>
       {pos}
     </span>
   );
 }
 
-/* ---------- tabella classifica (vista pubblica) ---------- */
+/* ---------- tabella classifica di girone (vista pubblica) ---------- */
 function StandingsTable({ rows, color }) {
   return (
     <div className="standings-wrap">
@@ -235,8 +250,8 @@ function StandingsTable({ rows, color }) {
   );
 }
 
-/* ---------- tabella migliori seconde (sola lettura) ---------- */
-function BestSecondsTable({ rows }) {
+/* ---------- tabella con colonna girone + badge (usata da generale e migliori seconde) ---------- */
+function CrossGironeTable({ rows, showQualified }) {
   return (
     <div className="standings-wrap">
       <table className="standings">
@@ -251,7 +266,7 @@ function BestSecondsTable({ rows }) {
             <th>Q.Set</th>
             <th>Pti F/S</th>
             <th>Q.Pti</th>
-            <th></th>
+            {showQualified && <th></th>}
           </tr>
         </thead>
         <tbody>
@@ -279,7 +294,9 @@ function BestSecondsTable({ rows }) {
                 {r.puntiFatti}-{r.puntiSubiti}
               </td>
               <td>{fmtQ(r.quozPunti)}</td>
-              <td>{i < 3 ? <span className="qualified-tag">Qualificata</span> : null}</td>
+              {showQualified && (
+                <td>{i < 3 ? <span className="qualified-tag">Qualificata</span> : null}</td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -288,7 +305,7 @@ function BestSecondsTable({ rows }) {
   );
 }
 
-/* ---------- riga editabile per l'admin (una squadra) ---------- */
+/* ---------- riga editabile per l'admin (classifica di girone) ---------- */
 const STAT_FIELDS = [
   { key: "partite", label: "PG" },
   { key: "punti", label: "Punti" },
@@ -344,8 +361,8 @@ function StandingsEditor({ girone, standings, onCommit }) {
   );
 }
 
-/* ---------- riga editabile per le migliori seconde (con reset) ---------- */
-function BestSecondsEditRow({ girone, team, current, hasOverride, onCommit, onReset }) {
+/* ---------- riga editabile con override + reset (riusata da generale e migliori seconde) ---------- */
+function OverrideEditRow({ girone, team, current, hasOverride, onCommit, onReset }) {
   const [local, setLocal] = useState(current);
 
   useEffect(() => {
@@ -390,6 +407,48 @@ function BestSecondsEditRow({ girone, team, current, hasOverride, onCommit, onRe
   );
 }
 
+/* ---------- editor classifica generale (tutte le squadre) ---------- */
+function GeneralOverridesEditor({ standings, overrides, onCommitOverride, onResetOverride }) {
+  const rows = Object.keys(SCHEDULE).flatMap((g) =>
+    teamsOfGirone(g).map((t) => {
+      const base = standings[t] || EMPTY_STAT;
+      const override = overrides[t];
+      const current = override || {
+        partite: base.partite,
+        punti: base.punti,
+        setVinti: base.setVinti,
+        setPersi: base.setPersi,
+        puntiFatti: base.puntiFatti,
+        puntiSubiti: base.puntiSubiti,
+      };
+      return { girone: g, team: t, current, hasOverride: !!override };
+    })
+  );
+
+  return (
+    <div className="stat-editor">
+      <div className="stat-editor-title">Modifica manuale — classifica generale</div>
+      <p className="exclusion-hint">
+        Qui trovi tutte le squadre con i dati presi dalla classifica del loro girone. Puoi modificarli a mano
+        per questa classifica generale — le classifiche di girone non cambiano. "Ripristina" riporta i dati
+        originali del girone.
+      </p>
+      {rows.map((r) => (
+        <OverrideEditRow
+          key={r.team}
+          girone={r.girone}
+          team={r.team}
+          current={r.current}
+          hasOverride={r.hasOverride}
+          onCommit={onCommitOverride}
+          onReset={onResetOverride}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ---------- editor migliori seconde ---------- */
 function BestSecondsEditor({ standings, overrides, onCommitOverride, onResetOverride }) {
   const rows = Object.keys(SCHEDULE)
     .map((g) => {
@@ -417,7 +476,7 @@ function BestSecondsEditor({ standings, overrides, onCommitOverride, onResetOver
         la classifica qui sotto si aggiorna in base a quello che scrivi. "Ripristina" riporta i dati originali del girone.
       </p>
       {rows.map((r) => (
-        <BestSecondsEditRow
+        <OverrideEditRow
           key={r.team}
           girone={r.girone}
           team={r.team}
@@ -474,14 +533,23 @@ function GironeView({ girone, standings, isAdmin, onCommit }) {
 }
 
 /* ---------- classifica generale ---------- */
-function GeneraleView({ standings, overrides, isAdmin, onCommitOverride, onResetOverride }) {
-  const all = Object.keys(SCHEDULE).flatMap((g) =>
-    computeStandings(g, standings).map((r) => ({ ...r, girone: g }))
+function GeneraleView({
+  standings,
+  generalOverrides,
+  bestSecondsOverrides,
+  isAdmin,
+  onCommitGeneralOverride,
+  onResetGeneralOverride,
+  onCommitBestSecondOverride,
+  onResetBestSecondOverride,
+}) {
+  const generalRows = useMemo(
+    () => computeGeneralStandings(standings, generalOverrides),
+    [standings, generalOverrides]
   );
-  const sortedAll = sortByQuozienti(all);
   const bestSeconds = useMemo(
-    () => computeBestSeconds(standings, overrides),
-    [standings, overrides]
+    () => computeBestSeconds(standings, bestSecondsOverrides),
+    [standings, bestSecondsOverrides]
   );
 
   return (
@@ -489,50 +557,20 @@ function GeneraleView({ standings, overrides, isAdmin, onCommitOverride, onReset
       <div className="section-head" style={{ borderColor: "#F5B942" }}>
         <h2>Classifica generale</h2>
       </div>
-      <div className="standings-wrap">
-        <table className="standings">
-          <thead>
-            <tr>
-              <th></th>
-              <th>Squadra</th>
-              <th>Girone</th>
-              <th>PG</th>
-              <th>Pt</th>
-              <th>Set</th>
-              <th>Q.Set</th>
-              <th>Pti F/S</th>
-              <th>Q.Pti</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedAll.map((r, i) => (
-              <tr key={r.team}>
-                <td>
-                  <PositionFlag pos={i + 1} />
-                </td>
-                <td className="team-name" style={{ borderColor: GIRONE_COLORS[r.girone] }}>
-                  {r.team}
-                </td>
-                <td>
-                  <span className="girone-chip" style={{ background: GIRONE_COLORS[r.girone] }}>
-                    {r.girone}
-                  </span>
-                </td>
-                <td>{r.partite}</td>
-                <td className="strong">{r.punti}</td>
-                <td>
-                  {r.setVinti}-{r.setPersi}
-                </td>
-                <td>{fmtQ(r.quozSet)}</td>
-                <td>
-                  {r.puntiFatti}-{r.puntiSubiti}
-                </td>
-                <td>{fmtQ(r.quozPunti)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+
+      {isAdmin && (
+        <>
+          <GeneralOverridesEditor
+            standings={standings}
+            overrides={generalOverrides}
+            onCommitOverride={onCommitGeneralOverride}
+            onResetOverride={onResetGeneralOverride}
+          />
+          <NetDivider color="#F5B942" />
+        </>
+      )}
+
+      <CrossGironeTable rows={generalRows} showQualified={false} />
 
       <NetDivider color="#F5B942" />
 
@@ -547,15 +585,15 @@ function GeneraleView({ standings, overrides, isAdmin, onCommitOverride, onReset
         <>
           <BestSecondsEditor
             standings={standings}
-            overrides={overrides}
-            onCommitOverride={onCommitOverride}
-            onResetOverride={onResetOverride}
+            overrides={bestSecondsOverrides}
+            onCommitOverride={onCommitBestSecondOverride}
+            onResetOverride={onResetBestSecondOverride}
           />
           <NetDivider color="#F5B942" />
         </>
       )}
 
-      <BestSecondsTable rows={bestSeconds} />
+      <CrossGironeTable rows={bestSeconds} showQualified={true} />
     </div>
   );
 }
@@ -637,7 +675,8 @@ export default function App() {
   const [view, setView] = useState("girone");
   const [selectedGirone, setSelectedGirone] = useState("A");
   const [standings, setStandings] = useState(null);
-  const [overrides, setOverrides] = useState(null);
+  const [generalOverrides, setGeneralOverrides] = useState(null);
+  const [bestSecondsOverrides, setBestSecondsOverrides] = useState(null);
   const [bracket, setBracket] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -661,22 +700,25 @@ export default function App() {
   // caricamento dati torneo
   useEffect(() => {
     let cancelled = false;
+
+    function rowToStat(row) {
+      return {
+        partite: row.partite,
+        punti: row.punti,
+        setVinti: row.set_vinti,
+        setPersi: row.set_persi,
+        puntiFatti: row.punti_fatti,
+        puntiSubiti: row.punti_subiti,
+      };
+    }
+
     async function load() {
       try {
         const { data, error } = await supabase.from("standings").select("*");
         if (error) throw error;
         const base = emptyStandingsState();
         (data || []).forEach((row) => {
-          if (base[row.team]) {
-            base[row.team] = {
-              partite: row.partite,
-              punti: row.punti,
-              setVinti: row.set_vinti,
-              setPersi: row.set_persi,
-              puntiFatti: row.punti_fatti,
-              puntiSubiti: row.punti_subiti,
-            };
-          }
+          if (base[row.team]) base[row.team] = rowToStat(row);
         });
         if (!cancelled) setStandings(base);
       } catch (e) {
@@ -684,22 +726,27 @@ export default function App() {
       }
 
       try {
+        const { data, error } = await supabase.from("general_overrides").select("*");
+        if (error) throw error;
+        const byTeam = {};
+        (data || []).forEach((row) => {
+          byTeam[row.team] = rowToStat(row);
+        });
+        if (!cancelled) setGeneralOverrides(byTeam);
+      } catch (e) {
+        if (!cancelled) setGeneralOverrides({});
+      }
+
+      try {
         const { data, error } = await supabase.from("best_seconds_overrides").select("*");
         if (error) throw error;
         const byTeam = {};
         (data || []).forEach((row) => {
-          byTeam[row.team] = {
-            partite: row.partite,
-            punti: row.punti,
-            setVinti: row.set_vinti,
-            setPersi: row.set_persi,
-            puntiFatti: row.punti_fatti,
-            puntiSubiti: row.punti_subiti,
-          };
+          byTeam[row.team] = rowToStat(row);
         });
-        if (!cancelled) setOverrides(byTeam);
+        if (!cancelled) setBestSecondsOverrides(byTeam);
       } catch (e) {
-        if (!cancelled) setOverrides({});
+        if (!cancelled) setBestSecondsOverrides({});
       }
 
       try {
@@ -742,37 +789,46 @@ export default function App() {
     }
   }, []);
 
-  const saveOverride = useCallback(async (team, fullRow) => {
-    setOverrides((prev) => ({ ...prev, [team]: fullRow }));
-    try {
-      const { error } = await supabase.from("best_seconds_overrides").upsert({
-        team,
-        partite: fullRow.partite,
-        punti: fullRow.punti,
-        set_vinti: fullRow.setVinti,
-        set_persi: fullRow.setPersi,
-        punti_fatti: fullRow.puntiFatti,
-        punti_subiti: fullRow.puntiSubiti,
-      });
-      if (error) setSaveError(true);
-    } catch (e) {
-      setSaveError(true);
-    }
-  }, []);
+  function makeOverrideSaver(table, setState) {
+    return useCallback(async (team, fullRow) => {
+      setState((prev) => ({ ...prev, [team]: fullRow }));
+      try {
+        const { error } = await supabase.from(table).upsert({
+          team,
+          partite: fullRow.partite,
+          punti: fullRow.punti,
+          set_vinti: fullRow.setVinti,
+          set_persi: fullRow.setPersi,
+          punti_fatti: fullRow.puntiFatti,
+          punti_subiti: fullRow.puntiSubiti,
+        });
+        if (error) setSaveError(true);
+      } catch (e) {
+        setSaveError(true);
+      }
+    }, [table, setState]);
+  }
 
-  const resetOverride = useCallback(async (team) => {
-    setOverrides((prev) => {
-      const next = { ...prev };
-      delete next[team];
-      return next;
-    });
-    try {
-      const { error } = await supabase.from("best_seconds_overrides").delete().eq("team", team);
-      if (error) setSaveError(true);
-    } catch (e) {
-      setSaveError(true);
-    }
-  }, []);
+  function makeOverrideResetter(table, setState) {
+    return useCallback(async (team) => {
+      setState((prev) => {
+        const next = { ...prev };
+        delete next[team];
+        return next;
+      });
+      try {
+        const { error } = await supabase.from(table).delete().eq("team", team);
+        if (error) setSaveError(true);
+      } catch (e) {
+        setSaveError(true);
+      }
+    }, [table, setState]);
+  }
+
+  const saveGeneralOverride = makeOverrideSaver("general_overrides", setGeneralOverrides);
+  const resetGeneralOverride = makeOverrideResetter("general_overrides", setGeneralOverrides);
+  const saveBestSecondOverride = makeOverrideSaver("best_seconds_overrides", setBestSecondsOverrides);
+  const resetBestSecondOverride = makeOverrideResetter("best_seconds_overrides", setBestSecondsOverrides);
 
   const updateBracketSlot = useCallback(async (id, patch) => {
     setBracket((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
@@ -1154,7 +1210,7 @@ export default function App() {
       )}
 
       <div className="content">
-        {loading || !standings || !bracket || !overrides ? (
+        {loading || !standings || !bracket || !generalOverrides || !bestSecondsOverrides ? (
           <div className="loading-state">Carico i dati del torneo…</div>
         ) : (
           <>
@@ -1169,10 +1225,13 @@ export default function App() {
             {view === "generale" && (
               <GeneraleView
                 standings={standings}
-                overrides={overrides}
+                generalOverrides={generalOverrides}
+                bestSecondsOverrides={bestSecondsOverrides}
                 isAdmin={isAdmin}
-                onCommitOverride={saveOverride}
-                onResetOverride={resetOverride}
+                onCommitGeneralOverride={saveGeneralOverride}
+                onResetGeneralOverride={resetGeneralOverride}
+                onCommitBestSecondOverride={saveBestSecondOverride}
+                onResetBestSecondOverride={resetBestSecondOverride}
               />
             )}
             {view === "finali" && (
