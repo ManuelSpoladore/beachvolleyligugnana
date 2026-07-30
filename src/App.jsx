@@ -4,7 +4,8 @@ import { Analytics } from "@vercel/analytics/react";
 
 /* ============================================================
    SAN LORENZO BEACH VOLLEY — piattaforma gironi & classifiche
-   (classifica inserita direttamente + classifica migliori seconde)
+   (classifica inserita direttamente + migliori seconde con
+   possibilità di modifica manuale)
    ============================================================ */
 
 const GIRONE_COLORS = {
@@ -19,26 +20,11 @@ const SCHEDULE = {
   A: {
     day: "Lunedì 27 luglio",
     matches: [
-      {
-        id: "A1",
-        time: "19:30",
-        team1: "GATTINI ESPLOSIVI",
-        team2: "CHEI DI SIL",
-      },
+      { id: "A1", time: "19:30", team1: "GATTINI ESPLOSIVI", team2: "CHEI DI SIL" },
       { id: "A2", time: "20:00", team1: "H2NO", team2: "BATTE FORTE IN RETE" },
       { id: "A3", time: "20:30", team1: "GATTINI ESPLOSIVI", team2: "H2NO" },
-      {
-        id: "A4",
-        time: "21:00",
-        team1: "CHEI DI SIL",
-        team2: "BATTE FORTE IN RETE",
-      },
-      {
-        id: "A5",
-        time: "21:30",
-        team1: "GATTINI ESPLOSIVI",
-        team2: "BATTE FORTE IN RETE",
-      },
+      { id: "A4", time: "21:00", team1: "CHEI DI SIL", team2: "BATTE FORTE IN RETE" },
+      { id: "A5", time: "21:30", team1: "GATTINI ESPLOSIVI", team2: "BATTE FORTE IN RETE" },
       { id: "A6", time: "22:00", team1: "CHEI DI SIL", team2: "H2NO" },
     ],
   },
@@ -46,36 +32,11 @@ const SCHEDULE = {
     day: "Martedì 28 luglio",
     matches: [
       { id: "B1", time: "19:30", team1: "UGABUGA", team2: "SMELINDROS" },
-      {
-        id: "B2",
-        time: "20:00",
-        team1: "PAUL COUNTRYSIDE & F.",
-        team2: "QUASI RACCOMANDATI",
-      },
-      {
-        id: "B3",
-        time: "20:30",
-        team1: "UGABUGA",
-        team2: "PAUL COUNTRYSIDE & F.",
-      },
-      {
-        id: "B4",
-        time: "21:00",
-        team1: "SMELINDROS",
-        team2: "QUASI RACCOMANDATI",
-      },
-      {
-        id: "B5",
-        time: "21:30",
-        team1: "UGABUGA",
-        team2: "QUASI RACCOMANDATI",
-      },
-      {
-        id: "B6",
-        time: "22:00",
-        team1: "SMELINDROS",
-        team2: "PAUL COUNTRYSIDE & F.",
-      },
+      { id: "B2", time: "20:00", team1: "PAUL COUNTRYSIDE & F.", team2: "QUASI RACCOMANDATI" },
+      { id: "B3", time: "20:30", team1: "UGABUGA", team2: "PAUL COUNTRYSIDE & F." },
+      { id: "B4", time: "21:00", team1: "SMELINDROS", team2: "QUASI RACCOMANDATI" },
+      { id: "B5", time: "21:30", team1: "UGABUGA", team2: "QUASI RACCOMANDATI" },
+      { id: "B6", time: "22:00", team1: "SMELINDROS", team2: "PAUL COUNTRYSIDE & F." },
     ],
   },
   C: {
@@ -86,12 +47,7 @@ const SCHEDULE = {
       { id: "C3", time: "20:00", team1: "ZIO FABBIO", team2: "BARCEMONA" },
       { id: "C4", time: "20:30", team1: "I QUAQUA", team2: "CHEI DAL VINARS" },
       { id: "C5", time: "21:00", team1: "TILACINI", team2: "BARCEMONA" },
-      {
-        id: "C6",
-        time: "21:30",
-        team1: "ZIO FABBIO",
-        team2: "CHEI DAL VINARS",
-      },
+      { id: "C6", time: "21:30", team1: "ZIO FABBIO", team2: "CHEI DAL VINARS" },
       { id: "C7", time: "22:00", team1: "I QUAQUA", team2: "TILACINI" },
       { id: "C8", time: "22:30", team1: "CHEI DAL VINARS", team2: "BARCEMONA" },
       { id: "C9", time: "23:00", team1: "ZIO FABBIO", team2: "TILACINI" },
@@ -101,149 +57,39 @@ const SCHEDULE = {
   D: {
     day: "Giovedì 30 luglio",
     matches: [
-      {
-        id: "D1",
-        time: "19:30",
-        team1: "SQUIRTONIC",
-        team2: "LA CARICA DEI 104",
-      },
+      { id: "D1", time: "19:30", team1: "SQUIRTONIC", team2: "LA CARICA DEI 104" },
       { id: "D2", time: "20:00", team1: "RICK & MORTI", team2: "CEV BOYZ" },
       { id: "D3", time: "20:30", team1: "SQUIRTONIC", team2: "RICK & MORTI" },
-      {
-        id: "D4",
-        time: "21:00",
-        team1: "LA CARICA DEI 104",
-        team2: "CEV BOYZ",
-      },
+      { id: "D4", time: "21:00", team1: "LA CARICA DEI 104", team2: "CEV BOYZ" },
       { id: "D5", time: "21:30", team1: "SQUIRTONIC", team2: "CEV BOYZ" },
-      {
-        id: "D6",
-        time: "22:00",
-        team1: "LA CARICA DEI 104",
-        team2: "RICK & MORTI",
-      },
+      { id: "D6", time: "22:00", team1: "LA CARICA DEI 104", team2: "RICK & MORTI" },
     ],
   },
   E: {
     day: "Venerdì 31 luglio",
     matches: [
-      {
-        id: "E1",
-        time: "19:30",
-        team1: "ENRICO CHI?",
-        team2: "SAE KWAN TAEKWONDO",
-      },
-      {
-        id: "E2",
-        time: "20:00",
-        team1: "SAE KWAN TAEKWONDO",
-        team2: "SIVALETTO 2.0",
-      },
-      {
-        id: "E3",
-        time: "20:30",
-        team1: "GENITORI IN FUGA",
-        team2: "SAE KWAN TAEKWONDO",
-      },
+      { id: "E1", time: "19:30", team1: "ENRICO CHI?", team2: "SAE KWAN TAEKWONDO" },
+      { id: "E2", time: "20:00", team1: "SAE KWAN TAEKWONDO", team2: "SIVALETTO 2.0" },
+      { id: "E3", time: "20:30", team1: "GENITORI IN FUGA", team2: "SAE KWAN TAEKWONDO" },
       { id: "E4", time: "21:00", team1: "ENRICO CHI?", team2: "SIVALETTO 2.0" },
-      {
-        id: "E5",
-        time: "21:30",
-        team1: "GENITORI IN FUGA",
-        team2: "SIVALETTO 2.0",
-      },
-      {
-        id: "E6",
-        time: "22:00",
-        team1: "GENITORI IN FUGA",
-        team2: "ENRICO CHI?",
-      },
+      { id: "E5", time: "21:30", team1: "GENITORI IN FUGA", team2: "SIVALETTO 2.0" },
+      { id: "E6", time: "22:00", team1: "GENITORI IN FUGA", team2: "ENRICO CHI?" },
     ],
   },
 };
 
 const BRACKET_DEFAULT = [
-  {
-    id: "qf1",
-    label: "Quarto 1",
-    time: "19:00",
-    teamA: "1°",
-    teamB: "8°",
-    score: "",
-  },
-  {
-    id: "qf2",
-    label: "Quarto 2",
-    time: "19:30",
-    teamA: "4°",
-    teamB: "5°",
-    score: "",
-  },
-  {
-    id: "qf3",
-    label: "Quarto 3",
-    time: "20:00",
-    teamA: "2°",
-    teamB: "7°",
-    score: "",
-  },
-  {
-    id: "qf4",
-    label: "Quarto 4",
-    time: "20:30",
-    teamA: "3°",
-    teamB: "6°",
-    score: "",
-  },
-  {
-    id: "sf1",
-    label: "Semifinale 1",
-    time: "21:30",
-    teamA: "Vinc. Q1",
-    teamB: "Vinc. Q2",
-    score: "",
-  },
-  {
-    id: "sf2",
-    label: "Semifinale 2",
-    time: "21:30",
-    teamA: "Vinc. Q3",
-    teamB: "Vinc. Q4",
-    score: "",
-  },
-  {
-    id: "f34",
-    label: "Finale 3°-4° posto",
-    time: "22:00",
-    teamA: "",
-    teamB: "",
-    score: "",
-  },
-  {
-    id: "f12",
-    label: "Finale 1°-2° posto",
-    time: "22:30",
-    teamA: "",
-    teamB: "",
-    score: "",
-  },
+  { id: "qf1", label: "Quarto 1", time: "19:00", teamA: "1°", teamB: "8°", score: "" },
+  { id: "qf2", label: "Quarto 2", time: "19:30", teamA: "4°", teamB: "5°", score: "" },
+  { id: "qf3", label: "Quarto 3", time: "20:00", teamA: "2°", teamB: "7°", score: "" },
+  { id: "qf4", label: "Quarto 4", time: "20:30", teamA: "3°", teamB: "6°", score: "" },
+  { id: "sf1", label: "Semifinale 1", time: "21:30", teamA: "Vinc. Q1", teamB: "Vinc. Q2", score: "" },
+  { id: "sf2", label: "Semifinale 2", time: "21:30", teamA: "Vinc. Q3", teamB: "Vinc. Q4", score: "" },
+  { id: "f34", label: "Finale 3°-4° posto", time: "22:00", teamA: "", teamB: "", score: "" },
+  { id: "f12", label: "Finale 1°-2° posto", time: "22:30", teamA: "", teamB: "", score: "" },
 ];
 
-const EMPTY_STAT = {
-  partite: 0,
-  punti: 0,
-  setVinti: 0,
-  setPersi: 0,
-  puntiFatti: 0,
-  puntiSubiti: 0,
-};
-const EMPTY_EXCLUSION = {
-  punti: 0,
-  setVinti: 0,
-  setPersi: 0,
-  puntiFatti: 0,
-  puntiSubiti: 0,
-};
+const EMPTY_STAT = { partite: 0, punti: 0, setVinti: 0, setPersi: 0, puntiFatti: 0, puntiSubiti: 0 };
 
 function teamsOfGirone(girone) {
   const set = new Set();
@@ -254,10 +100,8 @@ function teamsOfGirone(girone) {
   return Array.from(set);
 }
 
-// individua automaticamente il girone da 5 squadre (qualunque esso sia)
-const FIVE_TEAM_GIRONE = Object.keys(SCHEDULE).find(
-  (g) => teamsOfGirone(g).length === 5,
-);
+// il girone con più squadre (info usata solo per un testo esplicativo)
+const FIVE_TEAM_GIRONE = Object.keys(SCHEDULE).find((g) => teamsOfGirone(g).length === 5);
 
 function emptyStandingsState() {
   const state = {};
@@ -287,14 +131,8 @@ function withRatios(team, stat) {
     setPersi,
     puntiFatti,
     puntiSubiti,
-    quozSet:
-      setPersi === 0 ? (setVinti > 0 ? Infinity : 0) : setVinti / setPersi,
-    quozPunti:
-      puntiSubiti === 0
-        ? puntiFatti > 0
-          ? Infinity
-          : 0
-        : puntiFatti / puntiSubiti,
+    quozSet: setPersi === 0 ? (setVinti > 0 ? Infinity : 0) : setVinti / setPersi,
+    quozPunti: puntiSubiti === 0 ? (puntiFatti > 0 ? Infinity : 0) : puntiFatti / puntiSubiti,
   };
 }
 
@@ -313,27 +151,16 @@ function computeStandings(girone, standings) {
   return sortByQuozienti(rows);
 }
 
-/* ---------- classifica migliori seconde ---------- */
-function computeBestSeconds(standings, secondExclusion) {
+/* ---------- classifica migliori seconde (con override manuali) ---------- */
+function computeBestSeconds(standings, overrides) {
   const seconds = Object.keys(SCHEDULE)
     .map((g) => {
-      const rows = computeStandings(g, standings);
-      const second = rows[1];
+      const second = computeStandings(g, standings)[1];
       if (!second) return null;
-
-      if (g === FIVE_TEAM_GIRONE) {
-        const excl = secondExclusion[g] || EMPTY_EXCLUSION;
-        const adjusted = withRatios(second.team, {
-          partite: second.partite - 1,
-          punti: second.punti - (Number(excl.punti) || 0),
-          setVinti: second.setVinti - (Number(excl.setVinti) || 0),
-          setPersi: second.setPersi - (Number(excl.setPersi) || 0),
-          puntiFatti: second.puntiFatti - (Number(excl.puntiFatti) || 0),
-          puntiSubiti: second.puntiSubiti - (Number(excl.puntiSubiti) || 0),
-        });
-        return { ...adjusted, girone: g, adjusted: true };
-      }
-      return { ...second, girone: g, adjusted: false };
+      const override = overrides[second.team];
+      const source = override || second;
+      const withR = withRatios(second.team, source);
+      return { ...withR, girone: g, edited: !!override };
     })
     .filter(Boolean);
 
@@ -346,15 +173,7 @@ function NetDivider({ color = "#F5B942" }) {
     <div className="net-divider" aria-hidden="true">
       <span className="net-post" style={{ background: color }} />
       <svg viewBox="0 0 100 10" preserveAspectRatio="none" className="net-line">
-        <line
-          x1="0"
-          y1="5"
-          x2="100"
-          y2="5"
-          stroke={color}
-          strokeWidth="1.5"
-          strokeDasharray="4 4"
-        />
+        <line x1="0" y1="5" x2="100" y2="5" stroke={color} strokeWidth="1.5" strokeDasharray="4 4" />
       </svg>
       <span className="net-post" style={{ background: color }} />
     </div>
@@ -366,10 +185,7 @@ function PositionFlag({ pos }) {
   const bg = palette[pos] || "rgba(244,236,218,0.12)";
   const dark = pos <= 3;
   return (
-    <span
-      className="pos-flag"
-      style={{ background: bg, color: dark ? "#0E3B43" : "#070707" }}
-    >
+    <span className="pos-flag" style={{ background: bg, color: dark ? "#0E3B43" : "#F4ECDA" }}>
       {pos}
     </span>
   );
@@ -419,7 +235,7 @@ function StandingsTable({ rows, color }) {
   );
 }
 
-/* ---------- tabella migliori seconde ---------- */
+/* ---------- tabella migliori seconde (sola lettura) ---------- */
 function BestSecondsTable({ rows }) {
   return (
     <div className="standings-wrap">
@@ -444,17 +260,12 @@ function BestSecondsTable({ rows }) {
               <td>
                 <PositionFlag pos={i + 1} />
               </td>
-              <td
-                className="team-name"
-                style={{ borderColor: GIRONE_COLORS[r.girone] }}
-              >
+              <td className="team-name" style={{ borderColor: GIRONE_COLORS[r.girone] }}>
                 {r.team}
+                {r.edited && <span className="edited-dot" title="Dati modificati a mano" />}
               </td>
               <td>
-                <span
-                  className="girone-chip"
-                  style={{ background: GIRONE_COLORS[r.girone] }}
-                >
+                <span className="girone-chip" style={{ background: GIRONE_COLORS[r.girone] }}>
                   {r.girone}
                 </span>
               </td>
@@ -468,11 +279,7 @@ function BestSecondsTable({ rows }) {
                 {r.puntiFatti}-{r.puntiSubiti}
               </td>
               <td>{fmtQ(r.quozPunti)}</td>
-              <td>
-                {i < 3 ? (
-                  <span className="qualified-tag">Qualificata</span>
-                ) : null}
-              </td>
+              <td>{i < 3 ? <span className="qualified-tag">Qualificata</span> : null}</td>
             </tr>
           ))}
         </tbody>
@@ -529,57 +336,39 @@ function StandingsEditor({ girone, standings, onCommit }) {
   const teams = teamsOfGirone(girone);
   return (
     <div className="stat-editor">
-      <div className="stat-editor-title">
-        Inserisci / modifica classifica — Girone {girone}
-      </div>
+      <div className="stat-editor-title">Inserisci / modifica classifica — Girone {girone}</div>
       {teams.map((t) => (
-        <StatEditorRow
-          key={t}
-          team={t}
-          stat={standings[t] || EMPTY_STAT}
-          onCommit={onCommit}
-        />
+        <StatEditorRow key={t} team={t} stat={standings[t] || EMPTY_STAT} onCommit={onCommit} />
       ))}
     </div>
   );
 }
 
-/* ---------- box esclusione 2ª vs 5ª (solo girone da 5) ---------- */
-const EXCLUSION_FIELDS = [
-  { key: "punti", label: "Punti ottenuti" },
-  { key: "setVinti", label: "Set vinti" },
-  { key: "setPersi", label: "Set persi" },
-  { key: "puntiFatti", label: "Pti fatti" },
-  { key: "puntiSubiti", label: "Pti subiti" },
-];
-
-function SecondExclusionEditor({ girone, exclusion, onCommit }) {
-  const [local, setLocal] = useState(exclusion);
+/* ---------- riga editabile per le migliori seconde (con reset) ---------- */
+function BestSecondsEditRow({ girone, team, current, hasOverride, onCommit, onReset }) {
+  const [local, setLocal] = useState(current);
 
   useEffect(() => {
-    setLocal(exclusion);
-  }, [exclusion]);
+    setLocal(current);
+  }, [current]);
 
   function commit(field, value) {
     const num = value === "" ? 0 : Number(value);
     if (Number.isNaN(num)) return;
-    if (num !== exclusion[field]) onCommit(girone, { [field]: num });
+    onCommit(team, { ...current, [field]: num });
   }
 
   return (
-    <div className="stat-editor exclusion-box">
-      <div className="stat-editor-title">
-        Solo per la classifica "migliori seconde": dati della gara 2ª vs 5ª
-        classificata da escludere
-      </div>
-      <p className="exclusion-hint">
-        Inserisci qui i numeri ottenuti dalla 2ª classificata di questo girone
-        nella partita contro la 5ª classificata. La classifica ufficiale del
-        girone non cambia: questi dati servono solo per confrontare
-        correttamente le seconde tra loro.
-      </p>
+    <div className="stat-editor-row">
+      <span className="stat-team">
+        {team}{" "}
+        <span className="girone-chip small" style={{ background: GIRONE_COLORS[girone] }}>
+          {girone}
+        </span>
+        {hasOverride && <span className="qualified-tag edited-tag">Modificato</span>}
+      </span>
       <div className="stat-inputs">
-        {EXCLUSION_FIELDS.map((f) => (
+        {STAT_FIELDS.map((f) => (
           <label key={f.key} className="stat-input">
             <span>{f.label}</span>
             <input
@@ -592,6 +381,52 @@ function SecondExclusionEditor({ girone, exclusion, onCommit }) {
           </label>
         ))}
       </div>
+      {hasOverride && (
+        <button className="btn-ghost" onClick={() => onReset(team)}>
+          Ripristina dati girone
+        </button>
+      )}
+    </div>
+  );
+}
+
+function BestSecondsEditor({ standings, overrides, onCommitOverride, onResetOverride }) {
+  const rows = Object.keys(SCHEDULE)
+    .map((g) => {
+      const second = computeStandings(g, standings)[1];
+      if (!second) return null;
+      const override = overrides[second.team];
+      const current = override || {
+        partite: second.partite,
+        punti: second.punti,
+        setVinti: second.setVinti,
+        setPersi: second.setPersi,
+        puntiFatti: second.puntiFatti,
+        puntiSubiti: second.puntiSubiti,
+      };
+      return { girone: g, team: second.team, current, hasOverride: !!override };
+    })
+    .filter(Boolean);
+
+  return (
+    <div className="stat-editor">
+      <div className="stat-editor-title">Modifica manuale — classifica migliori seconde</div>
+      <p className="exclusion-hint">
+        Qui trovi la 2ª classificata di ogni girone con i dati presi dalla classifica normale. Puoi modificarli
+        a mano (ad esempio per pareggiare le partite della seconda del girone da 5 squadre, {FIVE_TEAM_GIRONE}) —
+        la classifica qui sotto si aggiorna in base a quello che scrivi. "Ripristina" riporta i dati originali del girone.
+      </p>
+      {rows.map((r) => (
+        <BestSecondsEditRow
+          key={r.team}
+          girone={r.girone}
+          team={r.team}
+          current={r.current}
+          hasOverride={r.hasOverride}
+          onCommit={onCommitOverride}
+          onReset={onResetOverride}
+        />
+      ))}
     </div>
   );
 }
@@ -615,44 +450,21 @@ function ScheduleList({ girone }) {
 }
 
 /* ---------- vista girone ---------- */
-function GironeView({
-  girone,
-  standings,
-  secondExclusion,
-  isAdmin,
-  onCommit,
-  onCommitExclusion,
-}) {
+function GironeView({ girone, standings, isAdmin, onCommit }) {
   const color = GIRONE_COLORS[girone];
-  const rows = useMemo(
-    () => computeStandings(girone, standings),
-    [girone, standings],
-  );
-  const isFiveTeam = girone === FIVE_TEAM_GIRONE;
+  const rows = useMemo(() => computeStandings(girone, standings), [girone, standings]);
   return (
     <div>
       <div className="section-head" style={{ borderColor: color }}>
         <h2>
-          Girone {girone}{" "}
-          <span className="day-label">— {SCHEDULE[girone].day}</span>
+          Girone {girone} <span className="day-label">— {SCHEDULE[girone].day}</span>
         </h2>
       </div>
       <StandingsTable rows={rows} color={color} />
       <NetDivider color={color} />
       {isAdmin && (
         <>
-          <StandingsEditor
-            girone={girone}
-            standings={standings}
-            onCommit={onCommit}
-          />
-          {isFiveTeam && (
-            <SecondExclusionEditor
-              girone={girone}
-              exclusion={secondExclusion[girone] || EMPTY_EXCLUSION}
-              onCommit={onCommitExclusion}
-            />
-          )}
+          <StandingsEditor girone={girone} standings={standings} onCommit={onCommit} />
           <NetDivider color={color} />
         </>
       )}
@@ -662,14 +474,14 @@ function GironeView({
 }
 
 /* ---------- classifica generale ---------- */
-function GeneraleView({ standings, secondExclusion }) {
+function GeneraleView({ standings, overrides, isAdmin, onCommitOverride, onResetOverride }) {
   const all = Object.keys(SCHEDULE).flatMap((g) =>
-    computeStandings(g, standings).map((r) => ({ ...r, girone: g })),
+    computeStandings(g, standings).map((r) => ({ ...r, girone: g }))
   );
   const sortedAll = sortByQuozienti(all);
   const bestSeconds = useMemo(
-    () => computeBestSeconds(standings, secondExclusion),
-    [standings, secondExclusion],
+    () => computeBestSeconds(standings, overrides),
+    [standings, overrides]
   );
 
   return (
@@ -698,17 +510,11 @@ function GeneraleView({ standings, secondExclusion }) {
                 <td>
                   <PositionFlag pos={i + 1} />
                 </td>
-                <td
-                  className="team-name"
-                  style={{ borderColor: GIRONE_COLORS[r.girone] }}
-                >
+                <td className="team-name" style={{ borderColor: GIRONE_COLORS[r.girone] }}>
                   {r.team}
                 </td>
                 <td>
-                  <span
-                    className="girone-chip"
-                    style={{ background: GIRONE_COLORS[r.girone] }}
-                  >
+                  <span className="girone-chip" style={{ background: GIRONE_COLORS[r.girone] }}>
                     {r.girone}
                   </span>
                 </td>
@@ -735,10 +541,20 @@ function GeneraleView({ standings, secondExclusion }) {
       </div>
       <p className="best-seconds-hint">
         Passano ai quarti tutte le prime classificate più le 3 migliori seconde.
-        Per il girone da 5 squadre ({FIVE_TEAM_GIRONE}), la seconda classificata
-        è confrontata al netto della gara contro la 5ª, per pareggiare il numero
-        di partite con le seconde degli altri gironi.
       </p>
+
+      {isAdmin && (
+        <>
+          <BestSecondsEditor
+            standings={standings}
+            overrides={overrides}
+            onCommitOverride={onCommitOverride}
+            onResetOverride={onResetOverride}
+          />
+          <NetDivider color="#F5B942" />
+        </>
+      )}
+
       <BestSecondsTable rows={bestSeconds} />
     </div>
   );
@@ -809,12 +625,7 @@ function FinaliView({ bracket, isAdmin, onUpdate }) {
       </div>
       <div className="bracket-list">
         {bracket.map((slot) => (
-          <BracketCard
-            key={slot.id}
-            slot={slot}
-            isAdmin={isAdmin}
-            onUpdate={onUpdate}
-          />
+          <BracketCard key={slot.id} slot={slot} isAdmin={isAdmin} onUpdate={onUpdate} />
         ))}
       </div>
     </div>
@@ -826,7 +637,7 @@ export default function App() {
   const [view, setView] = useState("girone");
   const [selectedGirone, setSelectedGirone] = useState("A");
   const [standings, setStandings] = useState(null);
-  const [secondExclusion, setSecondExclusion] = useState(null);
+  const [overrides, setOverrides] = useState(null);
   const [bracket, setBracket] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -841,11 +652,9 @@ export default function App() {
     supabase.auth.getSession().then(({ data }) => {
       setIsAdmin(!!data.session);
     });
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setIsAdmin(!!session);
-      },
-    );
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAdmin(!!session);
+    });
     return () => listener.subscription.unsubscribe();
   }, []);
 
@@ -875,13 +684,12 @@ export default function App() {
       }
 
       try {
-        const { data, error } = await supabase
-          .from("second_exclusion")
-          .select("*");
+        const { data, error } = await supabase.from("best_seconds_overrides").select("*");
         if (error) throw error;
-        const byGirone = {};
+        const byTeam = {};
         (data || []).forEach((row) => {
-          byGirone[row.girone] = {
+          byTeam[row.team] = {
+            partite: row.partite,
             punti: row.punti,
             setVinti: row.set_vinti,
             setPersi: row.set_persi,
@@ -889,9 +697,9 @@ export default function App() {
             puntiSubiti: row.punti_subiti,
           };
         });
-        if (!cancelled) setSecondExclusion(byGirone);
+        if (!cancelled) setOverrides(byTeam);
       } catch (e) {
-        if (!cancelled) setSecondExclusion({});
+        if (!cancelled) setOverrides({});
       }
 
       try {
@@ -901,12 +709,7 @@ export default function App() {
         const merged = BRACKET_DEFAULT.map((slot) => {
           const row = byId[slot.id];
           return row
-            ? {
-                ...slot,
-                teamA: row.team_a,
-                teamB: row.team_b,
-                score: row.score,
-              }
+            ? { ...slot, teamA: row.team_a, teamB: row.team_b, score: row.score }
             : slot;
         });
         if (!cancelled) setBracket(merged);
@@ -939,19 +742,32 @@ export default function App() {
     }
   }, []);
 
-  const saveExclusion = useCallback(async (girone, patch) => {
-    setSecondExclusion((prev) => ({
-      ...prev,
-      [girone]: { ...(prev[girone] || EMPTY_EXCLUSION), ...patch },
-    }));
-    const dbPatch = { girone };
-    if ("punti" in patch) dbPatch.punti = patch.punti;
-    if ("setVinti" in patch) dbPatch.set_vinti = patch.setVinti;
-    if ("setPersi" in patch) dbPatch.set_persi = patch.setPersi;
-    if ("puntiFatti" in patch) dbPatch.punti_fatti = patch.puntiFatti;
-    if ("puntiSubiti" in patch) dbPatch.punti_subiti = patch.puntiSubiti;
+  const saveOverride = useCallback(async (team, fullRow) => {
+    setOverrides((prev) => ({ ...prev, [team]: fullRow }));
     try {
-      const { error } = await supabase.from("second_exclusion").upsert(dbPatch);
+      const { error } = await supabase.from("best_seconds_overrides").upsert({
+        team,
+        partite: fullRow.partite,
+        punti: fullRow.punti,
+        set_vinti: fullRow.setVinti,
+        set_persi: fullRow.setPersi,
+        punti_fatti: fullRow.puntiFatti,
+        punti_subiti: fullRow.puntiSubiti,
+      });
+      if (error) setSaveError(true);
+    } catch (e) {
+      setSaveError(true);
+    }
+  }, []);
+
+  const resetOverride = useCallback(async (team) => {
+    setOverrides((prev) => {
+      const next = { ...prev };
+      delete next[team];
+      return next;
+    });
+    try {
+      const { error } = await supabase.from("best_seconds_overrides").delete().eq("team", team);
       if (error) setSaveError(true);
     } catch (e) {
       setSaveError(true);
@@ -959,9 +775,7 @@ export default function App() {
   }, []);
 
   const updateBracketSlot = useCallback(async (id, patch) => {
-    setBracket((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, ...patch } : s)),
-    );
+    setBracket((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
     const dbPatch = { id };
     if ("teamA" in patch) dbPatch.team_a = patch.teamA;
     if ("teamB" in patch) dbPatch.team_b = patch.teamB;
@@ -976,10 +790,7 @@ export default function App() {
 
   async function tryLogin() {
     setLoginError("");
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password: pwInput,
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password: pwInput });
     if (error) {
       setLoginError("Credenziali non valide");
     } else {
@@ -1117,6 +928,7 @@ export default function App() {
           font-weight: 700;
           font-size: 11px;
         }
+        .girone-chip.small { width: 18px; height: 18px; font-size: 9px; margin-left: 6px; }
         .qualified-tag {
           font-family: 'Space Mono', monospace;
           font-size: 10px;
@@ -1128,6 +940,20 @@ export default function App() {
           border-radius: 999px;
           padding: 3px 8px;
           white-space: nowrap;
+        }
+        .qualified-tag.edited-tag {
+          color: var(--sun);
+          background: rgba(245,185,66,0.15);
+          border-color: rgba(245,185,66,0.4);
+          margin-left: 6px;
+        }
+        .edited-dot {
+          display: inline-block;
+          width: 6px; height: 6px;
+          border-radius: 50%;
+          background: var(--sun);
+          margin-left: 6px;
+          vertical-align: middle;
         }
 
         .best-seconds-hint {
@@ -1152,10 +978,6 @@ export default function App() {
           border-radius: 12px;
           padding: 14px;
         }
-        .stat-editor.exclusion-box {
-          border-color: rgba(255,107,74,0.4);
-          background: rgba(255,107,74,0.06);
-        }
         .stat-editor-title {
           font-family: 'Oswald', sans-serif;
           text-transform: uppercase;
@@ -1179,7 +1001,7 @@ export default function App() {
           border-bottom: 1px dashed var(--paper-line);
         }
         .stat-editor-row:last-child { border-bottom: none; }
-        .stat-team { font-weight: 600; font-size: 13px; min-width: 160px; }
+        .stat-team { font-weight: 600; font-size: 13px; min-width: 160px; display: flex; align-items: center; flex-wrap: wrap; }
         .stat-inputs { display: flex; flex-wrap: wrap; gap: 10px; }
         .stat-input { display: flex; flex-direction: column; font-size: 10px; color: rgba(244,236,218,0.6); gap: 3px; text-transform: uppercase; letter-spacing: 0.04em; }
         .stat-input input {
@@ -1300,28 +1122,18 @@ export default function App() {
 
       {saveError && (
         <div className="save-toast">
-          Non sono riuscito a salvare l'ultima modifica. Controlla la
-          connessione e riprova.
+          Non sono riuscito a salvare l'ultima modifica. Controlla la connessione e riprova.
         </div>
       )}
 
       <div className="nav">
-        <button
-          className={view === "girone" ? "active" : ""}
-          onClick={() => setView("girone")}
-        >
+        <button className={view === "girone" ? "active" : ""} onClick={() => setView("girone")}>
           Gironi
         </button>
-        <button
-          className={view === "generale" ? "active" : ""}
-          onClick={() => setView("generale")}
-        >
+        <button className={view === "generale" ? "active" : ""} onClick={() => setView("generale")}>
           Classifica generale
         </button>
-        <button
-          className={view === "finali" ? "active" : ""}
-          onClick={() => setView("finali")}
-        >
+        <button className={view === "finali" ? "active" : ""} onClick={() => setView("finali")}>
           Finali
         </button>
       </div>
@@ -1342,7 +1154,7 @@ export default function App() {
       )}
 
       <div className="content">
-        {loading || !standings || !bracket || !secondExclusion ? (
+        {loading || !standings || !bracket || !overrides ? (
           <div className="loading-state">Carico i dati del torneo…</div>
         ) : (
           <>
@@ -1350,24 +1162,21 @@ export default function App() {
               <GironeView
                 girone={selectedGirone}
                 standings={standings}
-                secondExclusion={secondExclusion}
                 isAdmin={isAdmin}
                 onCommit={saveStat}
-                onCommitExclusion={saveExclusion}
               />
             )}
             {view === "generale" && (
               <GeneraleView
                 standings={standings}
-                secondExclusion={secondExclusion}
+                overrides={overrides}
+                isAdmin={isAdmin}
+                onCommitOverride={saveOverride}
+                onResetOverride={resetOverride}
               />
             )}
             {view === "finali" && (
-              <FinaliView
-                bracket={bracket}
-                isAdmin={isAdmin}
-                onUpdate={updateBracketSlot}
-              />
+              <FinaliView bracket={bracket} isAdmin={isAdmin} onUpdate={updateBracketSlot} />
             )}
           </>
         )}
